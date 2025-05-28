@@ -8654,10 +8654,15 @@ D(\0)\0\0*\0	+\0\0,\0-\0.\0S/\0:\0\b,;\0+<\0\0K=\x005\0>\0P
 \0\0o\0\0(\0\0\0\0\0\0\0\0\0\0\0}\0\0u\x07\0\0&\0\0\0("\0\0*\x07\0\0:\0\0\0V\x07\0\0\0z\0\0\b\0\0\0\0\0 \0\0t\0\0\0\0\0?\0\0\0o\0\0\0\0f\0\0s \0\0K\0\0\0J\0\0\0$\0\0\0\0R\b\0\0T\0\0t\0\0{ \0\0|\b\0\0@\0\0%\x07\0\0\0\0\x003\0\0V\0\0? \0\0$\0\0\0\0\0n\0\0\0\b\0\0C\x07\0\0\x07\0\0\0\0\0\0	\0\0\0\r\0\0\0\0 \0\0\0\0 \0\0\0 \0\0\0 \0\0\0\0"\0\0\0\0\0\0 \0\0\v \0\0\0/ \0\0/ \0\0\0_ \0\0\` \0\0\0\x000\0\0\0\x000\0\0~\0\0~\0\0\0\0\0\0\0\0\0\0	\0\0\0\0\r\0\0\0 \0\0\0\0 \0\0\0\0 \0\0\0 \0\0\0\0\0\0\0"\0\0\0 \0\0\v\0 \0\0( \0\0\0) \0\0/ \0\0\0/ \0\0_ \0\0\0\` \0\0\0\x000\0\0\x000\0\0\0~\0\0~\x003\0$\0\0\0$\0\0\0\0A\0\0\0Z\0\0\0\0\\\0\0\0\0\\\0\0\0_\0\0\0\0_\0\0\0a\0\0\0\0z\0\0\0\0\0\0\0\0\0\0\b!\0\0\0\0\0\0\0"\0\0\f \0\0.\0 \0\x000 \0\0\0^ \0\0a \0\0\0/\0\00\0\0~~\0\0\0\f\0\0\0\0\0\0\0\0\0\0\0\0$\0\0\0$\0\0\0\x000\0\0\x009\0\0\0\0A\0\0\0\0Z\0\0\0\\\0\0\0\0\\\0\0\0_\0\0\0\0_\0\0\0a\0\0\0\0z\0\0\0\0\0\0\0\0\0\0!\0\0\0\0\0\0\0D\0\0\f \0\0\0. \0\x000 \0\0\0^ \0\0a \0\0\0/\0\00\0\0~~\0\0\0\0\02\0\0\0\0\0\0\0\0`);
 
 // src/injected.unbundled.js
-var parserSetupPromise = isSetup.then(() => parserFromWasm(javascript_default));
+var parserSetupPromise = isSetup.then(async () => {
+  var parser = await parserFromWasm(javascript_default);
+  var tree = parser.parse("let a = 1;let b = 1;let c = 1;");
+  var root = tree.rootNode;
+  var identifiers = root.quickQuery(`(identifier)`);
+  console.debug(`identifiers is:`, identifiers);
+});
 var interval = setInterval(async () => {
-  var parser = await parserSetupPromise;
-  var tree;
+  await parserSetupPromise;
   console.debug(`globalThis.monaco is:`, globalThis.monaco);
   if (globalThis.monaco) {
     let frequencyCount = function(iterable, { valueToKey = null, sort = false } = {}) {
@@ -9006,27 +9011,6 @@ var interval = setInterval(async () => {
         }
       }
     };
-    const baseSuggestions = Object.entries(suggestions).map(([key, { prefix, body: body2, description }]) => ({
-      label: key,
-      kind: monaco.languages.CompletionItemKind.Snippet,
-      insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-      insertText: typeof body2 == "string" ? body2 : body2.join("\n"),
-      documentation: description,
-      range: null
-    }));
-    var identifierEntries = [];
-    setInterval(() => {
-      tree = parser.parse(editor.getValue());
-      let identifiers = [...new Set(tree.rootNode.quickQuery(`(identifier)`).map((each) => each.text).filter((each) => each.length > 1))];
-      identifierEntries = identifiers.map((key) => ({
-        label: key,
-        kind: monaco.languages.CompletionItemKind.Snippet,
-        insertText: key,
-        insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-        documentation: "var: " + key,
-        range: null
-      }));
-    }, 1e3);
     monaco.languages.registerCompletionItemProvider("javascript", {
       provideCompletionItems: function(model, position) {
         const word = model.getWordUntilPosition(position);
@@ -9036,14 +9020,17 @@ var interval = setInterval(async () => {
           startColumn: word.startColumn,
           endColumn: word.endColumn
         };
-        for (let each of baseSuggestions) {
-          each.range = range;
-        }
-        for (let each of identifierEntries) {
-          each.range = range;
-        }
+        const words = editor.ge;
         return {
           suggestions: [
+            {
+              label: "print",
+              kind: monaco.languages.CompletionItemKind.Function,
+              insertText: "console.log($1)",
+              insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+              documentation: "Log output to console",
+              range
+            },
             {
               label: "todo",
               kind: monaco.languages.CompletionItemKind.Snippet,
@@ -9052,8 +9039,14 @@ var interval = setInterval(async () => {
               documentation: "Insert a TODO comment",
               range
             },
-            ...baseSuggestions,
-            ...identifierEntries
+            ...Object.entries(suggestions).map(([key, { prefix, body: body2, description }]) => ({
+              label: key,
+              kind: monaco.languages.CompletionItemKind.Snippet,
+              insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+              insertText: typeof body2 == "string" ? body2 : body2.join("\n"),
+              documentation: description,
+              range
+            }))
           ]
         };
       }
