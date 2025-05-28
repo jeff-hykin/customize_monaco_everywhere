@@ -2,6 +2,8 @@ import { Parser, parserFromWasm, isSetup } from "./parser.js"
 import javascript from "https://github.com/jeff-hykin/common_tree_sitter_languages/raw/676ffa3b93768b8ac628fd5c61656f7dc41ba413/main/javascript.js"
 let parserSetupPromise = isSetup.then(()=>parserFromWasm(javascript))
 
+const isMacOS = navigator.userAgent.includes('Macintosh') || navigator.userAgent.includes('Mac OS X');
+
 // 
 // monaco setup
 // 
@@ -10,6 +12,22 @@ let interval = setInterval(async () => {
     var tree
     console.debug(`globalThis.monaco is:`,globalThis.monaco)
     if (globalThis.monaco) {
+        var buttons = [...document.querySelectorAll('button')]
+        var runButton = buttons.find(each=>each.innerText.includes('Run Code'))
+        var submitButton = buttons.find(each=>each.innerText.includes('Submit Code'))
+        // ctrl+enter = basic run
+        document.addEventListener('keydown', function(event) {
+            if (isMacOS && event.ctrlKey && event.key === 'Enter') {
+                runButton.click()
+            }
+        })
+        // ctrl+shift+enter = submit
+        document.addEventListener('keydown', function(event) {
+            if (isMacOS && event.ctrlKey && event.shiftKey && event.key === 'Enter') {
+                submitButton.click()
+            }
+        })
+
         clearInterval(interval)
         let monaco = globalThis.monaco
         var editor = monaco.editor.getEditors()[0]
@@ -457,7 +475,7 @@ let interval = setInterval(async () => {
                 documentation: "var: "+key,
                 range: null,
             }))
-        }, 1000)
+        }, 2000)
 
         monaco.languages.registerCompletionItemProvider("javascript", {
             provideCompletionItems: function (model, position) {
@@ -493,4 +511,4 @@ let interval = setInterval(async () => {
             },
         })
     }
-}, 500)
+}, 1000)

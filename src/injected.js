@@ -8655,6 +8655,7 @@ D(\0)\0\0*\0	+\0\0,\0-\0.\0S/\0:\0\b,;\0+<\0\0K=\x005\0>\0P
 
 // src/injected.unbundled.js
 var parserSetupPromise = isSetup.then(() => parserFromWasm(javascript_default));
+var isMacOS = navigator.userAgent.includes("Macintosh") || navigator.userAgent.includes("Mac OS X");
 var interval = setInterval(async () => {
   var parser = await parserSetupPromise;
   var tree;
@@ -8683,6 +8684,19 @@ var interval = setInterval(async () => {
         return ~(~number | 1 << bitIndex);
       }
     };
+    var buttons = [...document.querySelectorAll("button")];
+    var runButton = buttons.find((each) => each.innerText.includes("Run Code"));
+    var submitButton = buttons.find((each) => each.innerText.includes("Submit Code"));
+    document.addEventListener("keydown", function(event) {
+      if (isMacOS && event.ctrlKey && event.key === "Enter") {
+        runButton.click();
+      }
+    });
+    document.addEventListener("keydown", function(event) {
+      if (isMacOS && event.ctrlKey && event.shiftKey && event.key === "Enter") {
+        submitButton.click();
+      }
+    });
     clearInterval(interval);
     let monaco = globalThis.monaco;
     var editor = monaco.editor.getEditors()[0];
@@ -9026,7 +9040,7 @@ var interval = setInterval(async () => {
         documentation: "var: " + key,
         range: null
       }));
-    }, 1e3);
+    }, 2e3);
     monaco.languages.registerCompletionItemProvider("javascript", {
       provideCompletionItems: function(model, position) {
         const word = model.getWordUntilPosition(position);
@@ -9059,4 +9073,4 @@ var interval = setInterval(async () => {
       }
     });
   }
-}, 500);
+}, 1e3);

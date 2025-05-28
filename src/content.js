@@ -1,6 +1,4 @@
-console.log(`content`)
 const isMacOS = navigator.userAgent.includes('Macintosh') || navigator.userAgent.includes('Mac OS X');
-console.debug(`isMacOS is:`,isMacOS)
 
 // 
 // hackerrank run buttons
