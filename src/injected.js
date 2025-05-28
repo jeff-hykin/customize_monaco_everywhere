@@ -12,9 +12,9 @@ let interval = setInterval(() => {
         // settings
         // 
         editor.updateOptions({
-            suggest: {
-                onTriggerTimeout: 0, // Remove suggestion delay
-            },
+            suggestSelection: "recentlyUsedByPrefix",
+            snippetSuggestions: "top",
+            quickSuggestionsDelay: 0,
         })
 
         //
@@ -65,6 +65,11 @@ let interval = setInterval(() => {
         // snippets
         // 
         var suggestions = {
+            "print": {
+                prefix: "print",
+                body: ["console.log(`$1`)"],
+                description: "Print text to console",
+            },
             "outt": {
                 prefix: "outt",
                 body: ["console.debug(`$1 is:`,$1)"],
