@@ -18,7 +18,7 @@ let interval = setInterval(async () => {
         // settings
         // 
         editor.updateOptions({
-            suggestSelection: "recentlyUsedByPrefix",
+            // suggestSelection: "recentlyUsedByPrefix",
             snippetSuggestions: "top",
             quickSuggestionsDelay: 0,
             quickSuggestions: {
@@ -451,7 +451,7 @@ let interval = setInterval(async () => {
             // Fix Monaco not giving variable name suggestions inside of strings (for some reason)
             identifierEntries = identifiers.map(key=>({
                 label: key,
-                kind: monaco.languages.CompletionItemKind.Snippet,
+                kind: monaco.languages.CompletionItemKind.Variable,
                 insertText: key,
                 insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
                 documentation: "var: "+key,
