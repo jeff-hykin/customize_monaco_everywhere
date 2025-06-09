@@ -8656,6 +8656,24 @@ D(\0)\0\0*\0	+\0\0,\0-\0.\0S/\0:\0\b,;\0+<\0\0K=\x005\0>\0P
 // src/injected.unbundled.js
 var parserSetupPromise = isSetup.then(() => parserFromWasm(javascript_default));
 var isMacOS = navigator.userAgent.includes("Macintosh") || navigator.userAgent.includes("Mac OS X");
+if (navigator.userAgent.includes(" OPR/")) {
+  userAgent = navigator.userAgent;
+  userAgent = userAgent.replace(/ OPR\/\d+\.\d+\.\d+\.\d+/, "");
+  console.debug(`userAgent is:`, userAgent);
+  Object.defineProperty(navigator, "userAgent", { get() {
+    return userAgent;
+  } });
+  const realBrands = navigator.userAgentData.brands;
+  console.debug(`realBrands is:`, realBrands);
+  Object.defineProperty(navigator.userAgentData, "brands", { get() {
+    return [realBrands[0]];
+  } });
+  const userAgentData = navigator.userAgentData;
+  Object.defineProperty(navigator, "userAgentData", { get() {
+    return { ...userAgentData, brands: [realBrands[0]] };
+  } });
+}
+var userAgent;
 var interval = setInterval(async () => {
   var parser = await parserSetupPromise;
   var tree;
