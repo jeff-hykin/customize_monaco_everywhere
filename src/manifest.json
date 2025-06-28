@@ -1,18 +1,19 @@
 {
-    "background": {
-        "scripts": [
-            "background.js"
-        ]
-    },
-    "manifest_version": 2,
+    "manifest_version": 3,
     "name": "Customize Monaco Everywhere",
     "version": "1.0.0",
     "description": "",
     "permissions": [
         "activeTab",
-        "declarativeContent",
         "storage"
     ],
+    "host_permissions": [
+        "http://*/*",
+        "https://*/*"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
     "content_scripts": [
         {
             "js": [
@@ -25,6 +26,12 @@
         }
     ],
     "web_accessible_resources": [
-        "injected.js"
-    ]
+        {
+            "resources": ["injected.js"],
+            "matches": ["http://*/*", "https://*/*"]
+        }
+    ],
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'"
+    }
 }
