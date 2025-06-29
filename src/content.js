@@ -13,7 +13,7 @@
 
 const script = document.createElement("script")
 script.src = chrome.runtime.getURL("injected.js")
-script.onload = function () {
-    this.remove() // clean up after loading
-}
+// script.onload = function () {
+//     this.remove() // clean up after loading
+// }
 ;(document.head || document.documentElement).appendChild(script)

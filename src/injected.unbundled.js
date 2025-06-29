@@ -2,7 +2,7 @@ import { Parser, parserFromWasm, isSetup } from "./parser.js"
 import javascript from "https://github.com/jeff-hykin/common_tree_sitter_languages/raw/676ffa3b93768b8ac628fd5c61656f7dc41ba413/main/javascript.js"
 let parserSetupPromise = isSetup.then(()=>parserFromWasm(javascript))
 
-const isMacOS = navigator.userAgent.includes('Macintosh') || navigator.userAgent.includes('Mac OS X');
+// const isMacOS = navigator.userAgent.includes('Macintosh') || navigator.userAgent.includes('Mac OS X');
 // it doesn't like opera for some reason
 // if (navigator.userAgent.includes(' OPR/')) {
 //     var userAgent = navigator.userAgent
@@ -22,7 +22,7 @@ const isMacOS = navigator.userAgent.includes('Macintosh') || navigator.userAgent
 let interval = setInterval(async () => {
     var parser = await parserSetupPromise
     var tree
-    console.debug(`globalThis.monaco is:`,globalThis.monaco)
+    // console.debug(`globalThis.monaco is:`,globalThis.monaco)
     if (globalThis.monaco) {
         var buttons = [...document.querySelectorAll('button')]
         var runButton = buttons.find(each=>each.innerText.includes('Run Code'))
@@ -159,6 +159,38 @@ let interval = setInterval(async () => {
                 prefix: "def_zip",
                 body: ["function zip(...iterables) {", "    const innerIterZipLongSync = function* (...iterables) {", "        while (true) {", "            const nexts = iterables.map((each) => each.next())", "            // if all are done then stop", "            if (nexts.every((each) => each.done)) {", "                break", "            }", "            yield nexts.map((each) => each.value)", "        }", "    }", "    return [...innerIterZipLongSync(...iterables)]", "}", "$0"],
             },
+            def_spread: {
+                prefix: "def_spread",
+                body: ["const spread = ({quantity, min, max, decimals=5}) => {\n    const range = max-min\n    const increment = range / quantity\n    const values = [ min.toFixed(decimals)-0 ]\n    let index = 0\n    const valueAt = (index) => min + (increment * index)\n    while (valueAt(index) < max) {\n        values.push(valueAt(index++).toFixed(decimals)-0)\n    }\n    values.push(max.toFixed(decimals)-0)\n    return values\n}\n//ex: spread({quantity, min, max,})"],
+            },
+            def_sum: {
+                prefix: "def_sum",
+                body: ["const sum = (list) => list.reduce((a, b) => (a-0) + (b-0), 0)"],
+            },
+            def_product: {
+                prefix: "def_product",
+                body: ["const product = (list) => list.reduce((a, b) => (a-0) * (b-0), 0)"],
+            },
+            def_average: {
+                prefix: "def_average",
+                body: ["const average = (list) => (list.reduce((a, b) => (a-0) + (b-0), 0))/list.length"],
+            },
+            def_factorial: {
+                prefix: "def_factorial",
+                body: ["function factorial(n) {\n    if (n < 0) throw new Error(\"Negative numbers are not allowed.\");\n    let result = 1;\n    for (let i = 2; i <= n; i++) {\n        result *= i;\n    }\n    return result;\n}"],
+            },
+            def_modulo: {
+                prefix: "def_modulo",
+                body: ["function mod(n, m) {\n    let r = n % m;\n    if ((r > 0 && m < 0) || (r < 0 && m > 0)) {\n        r += m;\n    }\n    return r;\n}"],
+            },
+            def_getIntBit: {
+                prefix: "def_getIntBit",
+                body: ["function getIntBit(number, bitIndex) {\n    return number >> bitIndex & 1\n}\n//ex: getIntBit(number, bitIndex)"],
+            },
+            def_setIntBit: {
+                prefix: "def_setIntBit",
+                body: ["function setIntBit(number, bitIndex, value=1) {\n    if (value) {\n        return number | (1 << bitIndex)\n    } else {\n        return ~(~number | (1 << bitIndex))\n    }\n}\n//ex: setIntBit(number, bitIndex, value)"],
+            },
             stringToUint8Array: {
                 prefix: "stringToUint8Array",
                 body: ["new TextEncoder().encode(${1:string})"],
@@ -213,6 +245,12 @@ let interval = setInterval(async () => {
                 "prefix": "sort",
                 "body": [
                     ".sort((a,b,c)=>(c=typeof a,(c=='string'&&c==typeof b) ? a.localeCompare(b) : a-b )) // smallToBig",
+                ]
+            },
+            "sortBy": {
+                "prefix": "sortBy",
+                "body": [
+                    ".sort((a,b)=>a.$0 - b.$0) // smallToBig",
                 ]
             },
             "throw": {
@@ -354,6 +392,170 @@ let interval = setInterval(async () => {
                     "}",
                 ],
             },
+            "def_slices": {
+                "prefix": "def_slices",
+                "body": [
+                    "/**",
+                    " * Combinations",
+                    " *",
+                    " * @example",
+                    " * ```js",
+                    " *     combinations([1,2,3])",
+                    " *     // [[1],[2],[3],[1,2],[1,3],[2,3],[1,2,3]]",
+                    " *",
+                    " *     combinations([1,2,3], 2)",
+                    " *     // [[1,2],[1,3],[2,3]]",
+                    " *",
+                    " *     combinations([1,2,3], 3, 2)",
+                    " *     // [[1,2],[1,3],[2,3],[1,2,3]]",
+                    " * ```",
+                    " */",
+                    "const combinations = function* (elements, maxLength, minLength) {",
+                    "    // derived loosely from: https://lowrey.me/es6-javascript-combination-generator/",
+                    "    if (maxLength === minLength && minLength === undefined) {",
+                    "        minLength = 1",
+                    "        maxLength = elements.length",
+                    "    } else {",
+                    "        maxLength = maxLength || elements.length",
+                    "        minLength = minLength === undefined ? maxLength : minLength",
+                    "    }",
+                    "",
+                    "    if (minLength !== maxLength) {",
+                    "        for (let i = minLength; i <= maxLength; i++) {",
+                    "            yield* combinations(elements, i, i)",
+                    "        }",
+                    "    } else {",
+                    "        if (maxLength === 1) {",
+                    "            yield* elements.map((each) => [each])",
+                    "        } else {",
+                    "            for (let i = 0; i < elements.length; i++) {",
+                    "                for (const next of combinations(elements.slice(i + 1, elements.length), maxLength - 1, maxLength - 1)) {",
+                    "                    yield [elements[i], ...next]",
+                    "                }",
+                    "            }",
+                    "        }",
+                    "    }",
+                    "}",
+                    "//ex: combinations([1,2,3]) // [[1],[2],[3],[1,2],[1,3],[2,3],[1,2,3]]",
+                    "",
+                    "/**",
+                    " * All Possible Slices",
+                    " *",
+                    " * @example",
+                    " * ```js",
+                    " *     slices([1,2,3])",
+                    " *     // [",
+                    " *     //   [[1],[2],[3]],",
+                    " *     //   [[1],[2,3]],",
+                    " *     //   [[1,2],[3]],",
+                    " *     //   [[1,2,3]],",
+                    " *     // ]",
+                    " *     // note: doesnt contain [[1,3], [2]]",
+                    " * ```",
+                    " */",
+                    "const slices = function* (elements) {",
+                    "    const slicePoints = count({ start: 1, end: numberOfPartitions.length - 1 })",
+                    "    for (const combination of combinations(slicePoints)) {",
+                    "        combination.sort()",
+                    "        let prev = 0",
+                    "        const slices = []",
+                    "        for (const eachEndPoint of [...combination, elements.length]) {",
+                    "            slices.push(elements.slice(prev, eachEndPoint))",
+                    "            prev = eachEndPoint",
+                    "        }",
+                    "        yield slices",
+                    "    }",
+                    "}",
+                    "//ex: slices([1,2,3])",
+                ],
+            },
+            "def_combinations": {
+                "prefix": "def_combinations",
+                "body": [
+                    "/**",
+                    " * Combinations",
+                    " *",
+                    " * @example",
+                    " * ```js",
+                    " *     combinations([1,2,3])",
+                    " *     // [[1],[2],[3],[1,2],[1,3],[2,3],[1,2,3]]",
+                    " *",
+                    " *     combinations([1,2,3], 2)",
+                    " *     // [[1,2],[1,3],[2,3]]",
+                    " *",
+                    " *     combinations([1,2,3], 3, 2)",
+                    " *     // [[1,2],[1,3],[2,3],[1,2,3]]",
+                    " * ```",
+                    " */",
+                    "const combinations = function* (elements, {maxLength, minLength}={}) {",
+                    "    // derived loosely from: https://lowrey.me/es6-javascript-combination-generator/",
+                    "    if (maxLength == minLength && minLength == null) {",
+                    "        minLength = 1",
+                    "        maxLength = elements.length",
+                    "    } else {",
+                    "        if (maxLength === 0) {",
+                    "            return",
+                    "        }",
+                    "        maxLength = maxLength || elements.length",
+                    "        minLength = minLength === undefined ? maxLength : minLength",
+                    "    }",
+                    "",
+                    "    if (minLength !== maxLength) {",
+                    "        for (let i = minLength; i <= maxLength; i++) {",
+                    "            yield* combinations(elements, {maxLength: i, minLength: i})",
+                    "        }",
+                    "    } else {",
+                    "        if (maxLength === 1) {",
+                    "            yield* elements.map((each) => [each])",
+                    "        } else {",
+                    "            for (let i = 0; i < elements.length; i++) {",
+                    "                for (const next of combinations(elements.slice(i + 1, elements.length), {maxLength: maxLength - 1, minLength: maxLength - 1})) {",
+                    "                    yield [elements[i], ...next]",
+                    "                }",
+                    "            }",
+                    "        }",
+                    "    }",
+                    "}",
+                    "//ex: combinations([1,2,3], {maxLength:}) // [[1],[2],[3],[1,2],[1,3],[2,3],[1,2,3]]",
+                ],
+            },
+            "def_numberOfCombinations": {
+                "prefix": "def_numberOfCombinations",
+                "body": [
+                            "function numberOfCombinations({numberOfDigits, numberOfPossibleValues}) {",
+                    "    if (numberOfDigits < 0 || numberOfDigits > numberOfPossibleValues) {",
+                    "        return 0",
+                    "    }",
+                    "    if (numberOfDigits === 0 || numberOfDigits === numberOfPossibleValues) {",
+                    "        return 1",
+                    "    }",
+                    "",
+                    "    const useBigInt = numberOfPossibleValues > 57 // in the worst case (numberOfDigits=56/2) the output will be above Number.MAX_SAFE_INTEGER (9007199254740990)",
+                    "",
+                    "    if (!useBigInt) {",
+                    "        // Fast floating-point implementation for small values",
+                    "        numberOfDigits = Math.min(numberOfDigits, numberOfPossibleValues - numberOfDigits)",
+                    "        let result = 1",
+                    "        for (let i = 1; i <= numberOfDigits; i++) {",
+                    "            result *= numberOfPossibleValues - i + 1",
+                    "            result /= i",
+                    "        }",
+                    "        return Math.round(result) // in case of floating-point error",
+                    "    } else {",
+                    "        // BigInt version for larger values",
+                    "        numberOfPossibleValues = BigInt(numberOfPossibleValues)",
+                    "        numberOfDigits = BigInt(numberOfDigits)",
+                    "        numberOfDigits = numberOfDigits > numberOfPossibleValues - numberOfDigits ? numberOfPossibleValues - numberOfDigits : numberOfDigits",
+                    "        let result = 1n",
+                    "        for (let i = 1n; i <= numberOfDigits; i++) {",
+                    "            result = (result * (numberOfPossibleValues - i + 1n)) / i",
+                    "        }",
+                    "        return result",
+                    "    }",
+                    "}",
+                    "//ex: numberOfCombinations({numberOfDigits: 5, numberOfPossibleValues: 10}) // 252",
+                ],
+            },
             
             // TODO: sort randomNormal, intersection
         }
@@ -373,96 +575,10 @@ let interval = setInterval(async () => {
                 }
                 return counts
             }
-            var sum = (list) => list.reduce((a, b) => (a-0) + (b-0), 0)
-            function getIntBit(number, bitIndex) {
-                return number >> bitIndex & 1
-            }
-            function setIntBit(number, bitIndex, value=1) {
-                if (value) {
-                    return number | (1 << bitIndex)
-                } else {
-                    return ~(~number | (1 << bitIndex))
-                }
-            }
-
-            /**
-             * All Possible Slices
-             *
-             * @example
-             * ```js
-             *     slices([1,2,3])
-             *     // [
-             *     //   [[1],[2],[3]],
-             *     //   [[1],[2,3]],
-             *     //   [[1,2],[3]],
-             *     //   [[1,2,3]],
-             *     // ]
-             *     // note: doesnt contain [[1,3], [2]]
-             * ```
-             */
-            const slices = function* (elements) {
-                const slicePoints = count({ start: 1, end: numberOfPartitions.length - 1 })
-                for (const combination of combinations(slicePoints)) {
-                    combination.sort()
-                    let prev = 0
-                    const slices = []
-                    for (const eachEndPoint of [...combination, elements.length]) {
-                        slices.push(elements.slice(prev, eachEndPoint))
-                        prev = eachEndPoint
-                    }
-                    yield slices
-                }
-            }
-
-            /**
-             * Combinations
-             *
-             * @example
-             * ```js
-             *     combinations([1,2,3])
-             *     // [[1],[2],[3],[1,2],[1,3],[2,3],[1,2,3]]
-             *
-             *     combinations([1,2,3], 2)
-             *     // [[1,2],[1,3],[2,3]]
-             *
-             *     combinations([1,2,3], 3, 2)
-             *     // [[1,2],[1,3],[2,3],[1,2,3]]
-             * ```
-             */
-            const combinations = function* (elements, maxLength, minLength) {
-                // derived loosely from: https://lowrey.me/es6-javascript-combination-generator/
-                if (maxLength === minLength && minLength === undefined) {
-                    minLength = 1
-                    maxLength = elements.length
-                } else {
-                    maxLength = maxLength || elements.length
-                    minLength = minLength === undefined ? maxLength : minLength
-                }
-
-                if (minLength !== maxLength) {
-                    for (let i = minLength; i <= maxLength; i++) {
-                        yield* combinations(elements, i, i)
-                    }
-                } else {
-                    if (maxLength === 1) {
-                        yield* elements.map((each) => [each])
-                    } else {
-                        for (let i = 0; i < elements.length; i++) {
-                            for (const next of combinations(elements.slice(i + 1, elements.length), maxLength - 1, maxLength - 1)) {
-                                yield [elements[i], ...next]
-                            }
-                        }
-                    }
-                }
-            }
-            // product
+            
             // combinationOfChoices
             // permutation
-            // json cacher
-            // throttle
-            // setinterval
             // jsdoc
-            // proxy
         
         const baseSuggestions = Object.entries(suggestions).map(([key, { prefix, body, description }]) => ({
             label: key,
