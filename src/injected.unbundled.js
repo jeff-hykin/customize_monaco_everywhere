@@ -281,6 +281,17 @@ let interval = setInterval(async () => {
                 ],
                 "description": "Throw an error with a message"
             },
+            "objMap": {
+                "prefix": "objMap",
+                "body": [
+                    "Object.fromEntries(Object.entries($0).map(",
+                    "     ([key, value]) => {",
+                    "         return [key, value]",
+                    "     }",
+                    "))"
+                ],
+                "description": "Throw an error with a message"
+            },
             "sortMapByKeys": {
                 "prefix": "sortMapByKeys",
                 "body": [
@@ -594,6 +605,27 @@ let interval = setInterval(async () => {
                     "    }",
                     "    return counts",
                     "}",
+                ],
+            },
+            def_dfs: {
+                prefix: "def_dfs",
+                body: [
+                    "function *dfsIter({getNeighbors, startNode}) {",
+                    "    const visited = new Set() // not needed if its a tree with no cycles",
+                    "    const stack = [startNode]",
+                    "",
+                    "    while (stack.length > 0) {",
+                    "        const node = stack.pop()",
+                    "        if (!visited.has(node)) {",
+                    "            yield node",
+                    "            visited.add(node)",
+                    "            for (let eachNeighbor of getNeighbors(node).toReversed()) {",
+                    "                stack.push(eachNeighbor)",
+                    "            }",
+                    "        }",
+                    "    }",
+                    "}",
+                    "//ex: dfsIter({getNeighbors:(node)=>[node.left, node.right], startNode:root})",
                 ],
             },
             
