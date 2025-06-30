@@ -8773,7 +8773,7 @@ var interval = setInterval(async () => {
       },
       def_zip: {
         prefix: "def_zip",
-        body: ["function zip(...iterables) {", "    const innerIterZipLongSync = function* (...iterables) {", "        while (true) {", "            const nexts = iterables.map((each) => each.next())", "            // if all are done then stop", "            if (nexts.every((each) => each.done)) {", "                break", "            }", "            yield nexts.map((each) => each.value)", "        }", "    }", "    return [...innerIterZipLongSync(...iterables)]", "}", "$0"]
+        body: ["function zip(...iterables) {", "    const innerIterZipLongSync = function* (...iterables) {", "        while (true) {", "            const nexts = iterables.map((each) => each.next())", "            // if all are done then stop", "            if (nexts.every((each) => each.done)) {", "                break", "            }", "            yield nexts.map((each) => each.value)", "        }", "    }", "    return [...innerIterZipLongSync(...iterables.map(each=>each[Symbol.iterator]()))]", "}", "$0"]
       },
       def_spread: {
         prefix: "def_spread",
