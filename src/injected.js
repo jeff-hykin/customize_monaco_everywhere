@@ -8659,21 +8659,6 @@ var interval = setInterval(async () => {
   var parser = await parserSetupPromise;
   var tree;
   if (globalThis.monaco) {
-    let frequencyCount = function(iterable, { valueToKey = null, sort = false } = {}) {
-      valueToKey = valueToKey || ((each) => each);
-      const counts = /* @__PURE__ */ new Map();
-      for (let element of iterable) {
-        element = valueToKey(element);
-        counts.set(element, (counts.get(element) || 0) + 1);
-      }
-      if (sort) {
-        if (sort > 0) {
-          return new Map([...counts.entries()].sort((a2, b2) => b2[1] - a2[1]));
-        }
-        return new Map([...counts.entries()].sort((a2, b2) => a2[1] - b2[1]));
-      }
-      return counts;
-    };
     var buttons = [...document.querySelectorAll("button")];
     var runButton = buttons.find((each) => each.innerText.includes("Run Code"));
     var submitButton = buttons.find((each) => each.innerText.includes("Submit Code"));
@@ -9184,6 +9169,32 @@ var interval = setInterval(async () => {
           "    }",
           "}",
           "//ex: numberOfCombinations({numberOfDigits: 5, numberOfPossibleValues: 10}) // 252"
+        ]
+      },
+      def_arithmetic_sum: {
+        prefix: "def_arithmetic_sum",
+        body: [
+          "const arithmeticSum = ({quantity, step=1, start=1}) => quantity * ((2*start) + ((quantity-1) * step))/2"
+        ]
+      },
+      def_frequency_count: {
+        prefix: "def_frequency_count",
+        body: [
+          "function frequencyCount(iterable, {valueToKey=null, sort=false}={}) {",
+          "    valueToKey = valueToKey || ((each)=>each)",
+          "    const counts = new Map()",
+          "    for (let element of iterable) {",
+          "        element = valueToKey(element)",
+          "        counts.set(element, (counts.get(element)||0)+1)",
+          "    }",
+          "    if (sort) {",
+          "        if (sort > 0) {",
+          "            return new Map([...counts.entries()].sort((a,b)=>b[1]-a[1]))",
+          "        }",
+          "        return new Map([...counts.entries()].sort((a,b)=>a[1]-b[1]))",
+          "    }",
+          "    return counts",
+          "}"
         ]
       }
       // TODO: sort randomNormal, intersection

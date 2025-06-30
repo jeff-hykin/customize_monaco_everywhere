@@ -570,26 +570,36 @@ let interval = setInterval(async () => {
                     "//ex: numberOfCombinations({numberOfDigits: 5, numberOfPossibleValues: 10}) // 252",
                 ],
             },
+            def_arithmetic_sum: {
+                prefix: "def_arithmetic_sum",
+                body: [
+                    "const arithmeticSum = ({quantity, step=1, start=1}) => quantity * ((2*start) + ((quantity-1) * step))/2"
+                ],
+            },
+            def_frequency_count: {
+                prefix: "def_frequency_count",
+                body: [
+                    "function frequencyCount(iterable, {valueToKey=null, sort=false}={}) {",
+                    "    valueToKey = valueToKey || ((each)=>each)",
+                    "    const counts = new Map()",
+                    "    for (let element of iterable) {",
+                    "        element = valueToKey(element)",
+                    "        counts.set(element, (counts.get(element)||0)+1)",
+                    "    }",
+                    "    if (sort) {",
+                    "        if (sort > 0) {",
+                    "            return new Map([...counts.entries()].sort((a,b)=>b[1]-a[1]))",
+                    "        }",
+                    "        return new Map([...counts.entries()].sort((a,b)=>a[1]-b[1]))",
+                    "    }",
+                    "    return counts",
+                    "}",
+                ],
+            },
             
             // TODO: sort randomNormal, intersection
         }
-            // maybe some graph-theory stuff
-            function frequencyCount(iterable, {valueToKey=null, sort=false}={}) {
-                valueToKey = valueToKey || ((each)=>each)
-                const counts = new Map()
-                for (let element of iterable) {
-                    element = valueToKey(element)
-                    counts.set(element, (counts.get(element)||0)+1)
-                }
-                if (sort) {
-                    if (sort > 0) {
-                        return new Map([...counts.entries()].sort((a,b)=>b[1]-a[1]))
-                    }
-                    return new Map([...counts.entries()].sort((a,b)=>a[1]-b[1]))
-                }
-                return counts
-            }
-            
+            // maybe some graph-theory stuff ()
             // combinationOfChoices
             // permutation
             // jsdoc
