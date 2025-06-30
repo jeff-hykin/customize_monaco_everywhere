@@ -128,9 +128,23 @@ let interval = setInterval(async () => {
                 prefix: "eif",
                 body: [" else if ($1) {", "    ", "}"],
             },
+            whilei: {
+                prefix: "whilei",
+                body: [
+                    "let i=-1",
+                    "while (i<$0) {",
+                    "    i+=1",
+                    "    ",
+                    "}"
+                ],
+            },
             fori: {
                 prefix: "fori",
-                body: ["var i=-1", "for (var each of $0) {", "    i++", "    ", "}"],
+                body: [
+                    "for (let i=0; i<$0; i++) {",
+                    "    ",
+                    "}"
+                ],
             },
             "forof loop": {
                 prefix: "forof",
